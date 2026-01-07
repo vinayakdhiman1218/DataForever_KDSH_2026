@@ -1,21 +1,30 @@
 import pandas as pd
 import pathway as pw
 import numpy as np
-from tqdm import tqdm
 from sentence_transformers import SentenceTransformer
+from tqdm import tqdm
+import torch
 
-# ==============================
+# AUTO DEVICE DETECTION
+if torch.cuda.is_available():
+    device = "cuda"          
+elif torch.backends.mps.is_available():
+    device = "mps"           
+else:
+    device = "cpu"           
+
+print("Using device:", device)
+
+model = SentenceTransformer("all-MiniLM-L6-v2", device=device)
+
 # LOAD TEST DATA
-# ==============================
 test_df = pd.read_csv("test.csv")
 
-# ==============================
 # LOAD NOVEL TEXT
-# ==============================
 def load_book(book_name):
-    if book_name == "In Search of the Castaways":
-        path = "In Search of the Castaways.txt"
-    elif book_name == "The Count of Monte Cristo":
+    if book_name.lower() == "in search of the castaways":
+        path = "In search of the castaways.txt"
+    elif book_name.lower() == "the count of monte cristo":
         path = "The Count of Monte Cristo.txt"
     else:
         raise ValueError("Unknown book name")
@@ -23,72 +32,68 @@ def load_book(book_name):
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
         return f.read()
 
-# ==============================
 # CHUNK NOVEL
-# ==============================
 def chunk_text(text, size=800):
     return [text[i:i+size] for i in range(0, len(text), size)]
 
-# ==============================
-# EMBEDDING MODEL
-# ==============================
-model = SentenceTransformer("all-MiniLM-L6-v2")
+# CACHE
+book_cache = {}
 
-def cosine(a, b):
-    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
-
-# ==============================
+def cosine_scores(matrix, vector):
+    return np.dot(matrix, vector) / (
+        np.linalg.norm(matrix, axis=1) * np.linalg.norm(vector)
+    )
 # MAIN LOOP
-# ==============================
 results = []
 
-for _, row in tqdm(test_df.iterrows(), total=len(test_df), desc="Processing stories"):
+for _, row in tqdm(
+    test_df.iterrows(),
+    total=len(test_df),
+    desc="Processing stories"
+):
     sample_id = row["id"]
     book_name = row["book_name"]
     character = row["char"]
     claim = row["content"]
 
-    # Load and chunk novel
-    novel_text = load_book(book_name)
-    chunks = chunk_text(novel_text)
+    # ---- LOAD & CACHE BOOK ONCE ----
+    if book_name not in book_cache:
+        novel_text = load_book(book_name)
+        chunks = chunk_text(novel_text)
 
-    # ==============================
-    # PATHWAY INGESTION (MANDATORY ✔️)
-    # ==============================
-    pw.debug.table_from_pandas(
-        pd.DataFrame({"text": chunks})
-    )
-    # (Pathway used correctly for ingestion)
+        # Pathway ingestion
+        pw.debug.table_from_pandas(
+            pd.DataFrame({"text": chunks})
+        )
 
-    # ==============================
-    # RETRIEVAL (manual, safe)
-    # ==============================
-    claim_emb = model.encode(claim)
+        # Batch embeddings
+        chunk_embeddings = model.encode(
+            chunks,
+            batch_size=32,
+            show_progress_bar=False
+        )
 
-    scored_chunks = []
-    for ch in chunks:
-        ch_emb = model.encode(ch)
-        score = cosine(claim_emb, ch_emb)
-        scored_chunks.append((score, ch))
+        book_cache[book_name] = (chunks, chunk_embeddings)
 
-    scored_chunks.sort(reverse=True, key=lambda x: x[0])
-    evidence_text = " ".join([c[1] for c in scored_chunks[:3]])
+    chunks, chunk_embeddings = book_cache[book_name]
 
-    # ==============================
-    # FINAL DECISION
-    # ==============================
-    evidence_emb = model.encode(evidence_text)
-    final_score = cosine(claim_emb, evidence_emb)
+    # ---- CLAIM EMBEDDING (CHARACTER AWARE) ----
+    claim_text = f"{character}. {claim}"
+    claim_emb = model.encode([claim_text])[0]
 
-    prediction = 1 if final_score > 0.42 else 0
+    # ---- FAST SIMILARITY ----
+    scores = cosine_scores(chunk_embeddings, claim_emb)
+    best_idx = scores.argmax()
+    final_score = scores[best_idx]
+
+    # ---- DECISION (SAFE & CONSERVATIVE) ----
+    prediction = 1 if final_score > 0.45 else 0
 
     results.append({
         "id": sample_id,
         "prediction": prediction
     })
 
-# ==============================
 # SAVE RESULTS
-# ==============================
 pd.DataFrame(results).to_csv("results.csv", index=False)
-print("✅ results.csv generated (Track A compliant)")
+print("✅ results.csv generated successfully.")
