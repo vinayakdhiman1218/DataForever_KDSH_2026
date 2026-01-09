@@ -1,4 +1,4 @@
-<details>
+
    <summary><b>The Minimal Version Best for Hack-a-Thon (Choice - A)</b></summary>
 
 # Kharagpur Data Science Hackathon (KDSH) – Track A
@@ -297,7 +297,6 @@ We hope that this README helps a Lot for Both Beginners to Enhance and for the P
 We Thank `Kharagpur Data Science Hackathon (KDSH)` YEAR: 2026 to provide us the Excellent Oppurtunity for expressing our Ideas with the Logical using of the Most valueable, powerful & useful LLM `pathway`
 We hope that this README helps a Lot for Both Beginners to Enhance and for the Professionals to Glance out the Features of this Hack-a-Thon!!
 
-</details>
 
 ---
 ---
