@@ -81,7 +81,7 @@ for _, row in tqdm(
     claim_text = f"{character}. {claim}"
     claim_embedding = model.encode([claim_text])[0]
 
-    # ---- SIMILARITY SEARCH ----
+    # SIMILARITY SEARCH 
     scores = cosine_similarity(embeddings, claim_embedding)
     best_idx = scores.argmax()
     best_score = scores[best_idx]
@@ -121,14 +121,12 @@ for _, row in tqdm(
 
     if prediction == 1:
         rationale = (
-            "Prediction is consistent. This conclusion is based on the following "
-            "sentence from the main story text that aligns with the backstory: "
+            "Prediction is consistent."
             f"\"{excerpt}\""
         )
     else:
         rationale = (
-            "Prediction is inconsistent. No complete sentence in the main story "
-            "provides sufficient evidence to support the given backstory."
+            "Prediction is inconsistent."
         )
 
     results.append({
