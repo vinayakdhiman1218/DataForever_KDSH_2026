@@ -1,6 +1,3 @@
-
-   <summary><b>The Minimal Version Best for Hack-a-Thon (Choice - A)</b></summary>
-
 # Kharagpur Data Science Hackathon (KDSH) – Track A
 
 > **Task:** Verify whether a character backstory claim is logically and causally consistent with long-form literary narratives.
