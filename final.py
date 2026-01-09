@@ -91,40 +91,44 @@ for _, row in tqdm(
     prediction = 1 if best_score > 0.45 else 0
 
     # ---- RATIONALE ----
+    # ---- RATIONALE ----
+    clean_chunk = best_chunk.replace("\n", " ").strip()
+
+    # Remove leading chapter headers if present
+    lowered = clean_chunk.lower()
+    if lowered.startswith("chapter"):
+        parts = clean_chunk.split(".", 1)
+        if len(parts) > 1:
+            clean_chunk = parts[1].strip()
+
+    # Extract a clean, complete sentence starting at a proper boundary
+    sentences = []
+    for part in clean_chunk.split("."):
+        s = part.strip()
+        if len(s) > 40 and s and s[0].isupper():
+            sentences.append(s + ".")
+
+    if sentences:
+        excerpt = sentences[0]
+    else:
+        # Fallback: find nearest previous sentence boundary
+        cut = clean_chunk[:300]
+        last_period = cut.rfind(".")
+        if last_period != -1:
+            excerpt = cut[: last_period + 1].strip()
+        else:
+            excerpt = cut.strip() + "."
+
     if prediction == 1:
-        clean_chunk = best_chunk.replace("\n", " ").strip()
-
-        # Try to detect chapter/section heading
-        chapter_hint = ""
-        lowered = clean_chunk.lower()
-        if "chapter" in lowered:
-            chap_idx = lowered.find("chapter")
-            chapter_hint = clean_chunk[chap_idx: chap_idx + 60].split(".")[0] + "."
-
-        # Extract a complete sentence for evidence
-        first_period = clean_chunk.find(".")
-        if first_period != -1 and first_period < 300:
-            excerpt = clean_chunk[: first_period + 1]
-        else:
-            excerpt = clean_chunk[:180]
-
-        if chapter_hint:
-            rationale = (
-                f"This claim is marked consistent because the following line is taken "
-                f"from the main story text ({chapter_hint}) and aligns with the given "
-                f"backstory: \"{excerpt}\""
-            )
-        else:
-            rationale = (
-                "This claim is marked consistent because the following line is taken "
-                "from the main story text and aligns with the given backstory: "
-                f"\"{excerpt}\""
-            )
+        rationale = (
+            "Prediction is consistent. This conclusion is based on the following "
+            "sentence from the main story text that aligns with the backstory: "
+            f"\"{excerpt}\""
+        )
     else:
         rationale = (
-            "This claim is marked inconsistent because no line from the main story "
-            "text (across relevant chapters/sections) provides clear support for "
-            "the given backstory."
+            "Prediction is inconsistent. No complete sentence in the main story "
+            "provides sufficient evidence to support the given backstory."
         )
 
     results.append({
