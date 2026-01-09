@@ -136,7 +136,7 @@ Inconsistent claims lack sufficient semantic evidence or contradict the narrativ
 ```
 <br>
 
-**| Team-mates | Contributions |**
+**| Team-mates |**
 | Name | Role |
 |-----|------|
 | Vinayak Dhiman | Lead Developer & System Integration |
