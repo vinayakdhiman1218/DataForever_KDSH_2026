@@ -90,7 +90,7 @@ for _, row in tqdm(
     # ---- DECISION RULE ----
     prediction = 1 if best_score > 0.45 else 0
 
-    # ---- RATIONALE (1–2 LINES) ----
+    # ---- RATIONALE ----
     if prediction == 1:
         rationale = best_chunk[:180].replace("\n", " ")
     else:
