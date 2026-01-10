@@ -1,15 +1,16 @@
-# Core framework (Track A requirement)
-pathway
+# KDSH 2026 – Track A Requirements
+# Pathway framework (Track A mandatory)
+pathway==0.11.1
 
 # Semantic embeddings
-sentence-transformers
+sentence-transformers==2.2.2
 
-# Deep learning backend (CUDA / MPS / CPU support)
-torch
+# Deep learning backend (CPU / MPS / CUDA)
+torch==2.1.2
 
-# Data handling & numerical computation
-pandas
-numpy
+# Data handling
+pandas==2.1.4
+numpy==1.26.2
 
-# Progress visualization
-tqdm
+# Progress bar
+tqdm==4.66.1
