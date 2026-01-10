@@ -1,6 +1,6 @@
 # KDSH 2026 – Track A Requirements
 # Pathway framework (Track A mandatory)
-pathway==0.10.4
+pathway==0.2.0
 
 # Semantic embeddings
 sentence-transformers==2.2.2
