@@ -1,16 +1,15 @@
-# KDSH 2026 – Track A Requirements
-# Pathway framework (Track A mandatory)
-pathway==0.2.0
+# Core framework (Track A requirement)
+pathway==0.post1
 
 # Semantic embeddings
 sentence-transformers==2.2.2
 
-# Deep learning backend (CPU / MPS / CUDA)
+# Deep learning backend
 torch==2.1.2
 
 # Data handling
 pandas==2.1.4
 numpy==1.26.2
 
-# Progress bar
+# Progress visualization
 tqdm==4.66.1
