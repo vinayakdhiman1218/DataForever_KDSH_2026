@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 # CONFIG
 MODEL_NAME = "all-MiniLM-L6-v2"
-THRESHOLD = 0.30
+THRESHOLD = 0.45
 
 print("🔹 Loading embedding model...")
 model = SentenceTransformer(MODEL_NAME)
